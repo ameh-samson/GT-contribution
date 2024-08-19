@@ -1,0 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .gradient-text {
+    background: linear-gradient(96.87deg, #247b7b 13.61%, #3b247b 68.44%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
