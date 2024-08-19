@@ -1,7 +1,44 @@
 import { useTheme } from "../hooks/useTheme";
+import { useState } from "react";
+import axios from "axios";
+import { ToDoProps } from "../types/toDoProps";
 
 const SearchBar = () => {
   const { theme } = useTheme();
+
+  const [toDo, setToDo] = useState<ToDoProps>({
+    title: "",
+    completed: false,
+  });
+
+  const createToDo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setToDo((prevToDo) => ({
+      ...prevToDo,
+      [name]: value,
+    }));
+  };
+
+  const postToDo = async (e: React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!toDo.title) {
+      return alert("Can't add an empty field");
+    }
+    try {
+      await axios.post("https://gt-todo-api.onrender.com/todos", {
+        title: toDo.title,
+        completed: toDo.completed,
+      });
+
+      setToDo({
+        title: "",
+        completed: toDo.completed,
+      });
+    } catch (error) {
+      alert("Failed to add To Do");
+    }
+  };
+
   return (
     <div
       className={`flex items-center ${
@@ -10,6 +47,9 @@ const SearchBar = () => {
     >
       <input
         type="text"
+        name="title"
+        value={toDo.title}
+        onChange={createToDo}
         placeholder="Create a new todo..."
         className={`flex-1 bg-transparent  ${
           theme === "dark"
@@ -17,7 +57,10 @@ const SearchBar = () => {
             : "text-veryDarkGrayishBlue"
         } focus:outline-none`}
       />
-      <button className="ml-4 bg-veryDarkGrayishBlueDarker text-white p-2 rounded-md hover:bg-veryDarkGrayishBlueDark">
+      <button
+        onClick={postToDo}
+        className="ml-4 bg-veryDarkGrayishBlueDarker text-white p-2 rounded-md hover:bg-veryDarkGrayishBlueDark"
+      >
         Add
       </button>
     </div>
