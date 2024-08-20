@@ -10,6 +10,7 @@ const ToDoCard = () => {
   const [toDos, setToDos] = useState<ToDoProps[]>([]);
   const [count, setCount] = useState(0);
 
+
   useEffect(() => {
     axios
       .get("https://gt-todo-api.onrender.com/todos")
@@ -42,20 +43,22 @@ const ToDoCard = () => {
     const objParam = { ...obj, completed: true };
     console.log(objParam, "objParam2");
 
-    fetch(`https://gt-todo-api.onrender.com/todos/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(objParam)
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        setToDos(result);
-        setCount(count + 1);
-      })
-      .catch((err) => console.log(err, "err"));
-  }
+   fetch(`https://gt-todo-api.onrender.com/todos/${id}`, {
+    method: "PUT",
+    headers: {
+       "Content-Type": "application/json"
+    },
+     body: JSON.stringify(objParam)
+   })
+    .then((res) => res.json())
+     .then((result) => {
+       setToDos(result);
+       setCount(count + 1);
+     })
+     .catch((err) => console.log(err, "err"));
+}
+
+
 
 
   return (
@@ -98,12 +101,13 @@ const ToDoCard = () => {
           })}
       </ul>{" "}
       <div className="flex justify-between border-t-[1px] p-[10px]">
-        <span className="cursor-pointer">5 items left</span>
-        <span className="cursor-pointer">All</span>
-        <span className="cursor-pointer">Active</span>
-        <span className="cursor-pointer">Completed</span>
-        <span className="cursor-pointer">Clear Completed</span>
+        <button className="cursor-pointer">5 items left</button>
+        <button   className="cursor-pointer">All</button>
+        <button  className="cursor-pointer">Active</button>
+        <button   className="cursor-pointer">Completed</button>
+        <button className="cursor-pointer">Clear Completed</button>
       </div>
+
     </div>
   );
 };

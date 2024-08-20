@@ -8,3 +8,4 @@ export type themeStateType = {
   theme: string;
   setTheme: (theme: string) => void;
 };
+
