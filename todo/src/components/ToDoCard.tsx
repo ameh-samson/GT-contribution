@@ -4,59 +4,97 @@ import { useTheme } from "../hooks/useTheme";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { ToDoProps } from "../types/toDoProps";
-
+import { Filters, initialFilters } from "../types";
 const ToDoCard = () => {
   const { theme } = useTheme();
   const [toDos, setToDos] = useState<ToDoProps[]>([]);
   const [count, setCount] = useState(0);
 
+  const [filter, setFilter] = useState<Filters>(initialFilters);
+
   useEffect(() => {
-    axios
-      .get("https://gt-todo-api.onrender.com/todos")
-      .then((response) => setToDos(response.data))
-      .catch((error) => console.log(error));
-  }, [count]);
+    const fetchToDos = async () => {
+      try {
+        const response = await axios.get(
+          "https://gt-todo-api.onrender.com/todos"
+        );
+        setToDos(response.data);
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+      }
+    };
 
+    fetchToDos();
+  }, []);
 
+  function markToBeUnCompleted(
+    item: ToDoProps,
+    _id: string | undefined,
+  ) {
+    const updatedTodo = { ...item, completed: false };
 
-  function markToBeUnCompleted(obj: ToDoProps, id: string | undefined) {
-    const objParam = { ...obj, completed: false };
-    console.log(objParam, "objParam1");
-
-    fetch(`https://gt-todo-api.onrender.com/todos/${id}`, {
+    fetch(`https://gt-todo-api.onrender.com/todos/${item._id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(objParam)
+      body: JSON.stringify(updatedTodo),
     })
       .then((res) => res.json())
-      .then((result) => {
-        setToDos(result);
-        setCount(count + 1);
+      .then((updatedItem) => {
+        setToDos((prevToDos) => {
+          return prevToDos.map((item) => {
+            if (item._id === updatedItem._id) {
+              return updatedItem;
+            } else {
+              return item;
+            }
+          });
+        });
       })
-      .catch((err) => console.log(err, "err"));
+
+      .catch((err) => console.log("Error updating todo:", err));
   }
 
-  function markToBeCompleted(obj: ToDoProps, id: string | undefined) {
-    const objParam = { ...obj, completed: true };
-    console.log(objParam, "objParam2");
+  function markToBeCompleted(
+    item: ToDoProps,
+    _id: string | undefined,
+  ) {
+    const updatedTodo = { ...item, completed: !item.completed };
 
-    fetch(`https://gt-todo-api.onrender.com/todos/${id}`, {
+    fetch(`https://gt-todo-api.onrender.com/todos/${item._id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(objParam)
+      body: JSON.stringify(updatedTodo),
     })
       .then((res) => res.json())
-      .then((result) => {
-        setToDos(result);
-        setCount(count + 1);
+      .then((updatedItem) => {
+        setToDos((prevToDos) => {
+          return prevToDos.map((item) => {
+            if (item._id === updatedItem._id) {
+              return updatedItem;
+            } else {
+              return item;
+            }
+          });
+        });
       })
-      .catch((err) => console.log(err, "err"));
+
+      .catch((err) => console.log("Error updating todo:", err));
   }
 
+  const filteredData = toDos.filter((item) => {
+    if (filter.types === "all") {
+      return item;
+    } else if (filter.types === "completed") {
+      return item.completed === true;
+    } else if (filter.types === "uncompleted") {
+      return item.completed === false;
+    }
+    return false;
+  });
 
   return (
     <div
@@ -64,45 +102,59 @@ const ToDoCard = () => {
         theme === "light"
           ? "bg-veryLightGray text-veryDarkGrayishBlue"
           : "bg-veryDarkGrayishBlueDarker text-veryLightGrayishBlue"
-      } w-full max-w-lg p-6 rounded-md shadow-md`}>
+      } w-full max-w-lg p-6 rounded-md shadow-md`}
+    >
       <ul>
-        {Array.isArray(toDos) &&
-          toDos?.map((item: ToDoProps) => {
-            return (
-              <li
-                key={item._id}
-                className={`flex items-center mb-5 border-b-[1px] ${
-                  theme === "dark" ? "border-b-veryDarkGrayishBlue" : ""
-                }  p-[10px]`}>
-                <span className="text-blue-500 mr-5 ">
-                  {item.completed === true ? (
-                    <FaCircleCheck
-                      className="cursor-pointer"
-                      onClick={() => markToBeUnCompleted(item, item._id)}
-                    />
-                  ) : (
-                    <MdOutlineRadioButtonUnchecked
-                      className="cursor-pointer"
-                      onClick={() => markToBeCompleted(item, item._id)}
-                    />
-                  )}
-                </span>
-                <span
-                  className={`${
-                    item.completed === true ? "line-through" : ""
-                  }`}>
-                  {item.title}
-                </span>
-              </li>
-            );
-          })}
+        {filteredData.map((item, index) => {
+          return (
+            <li
+              key={index}
+              className={`flex items-center mb-5 border-b-[1px] ${
+                theme === "dark" ? "border-b-veryDarkGrayishBlue" : ""
+              }  p-[10px]`}
+            >
+              <span className="text-blue-500 mr-5 ">
+                {item.completed ? (
+                  <FaCircleCheck
+                    className="cursor-pointer"
+                    onClick={() => markToBeUnCompleted(item, item._id)}
+                  />
+                ) : (
+                  <MdOutlineRadioButtonUnchecked
+                    className="cursor-pointer"
+                    onClick={() => markToBeCompleted(item, item._id)}
+                  />
+                )}
+              </span>
+              <span
+                className={`${item.completed === true ? "line-through" : ""}`}
+              >
+                {item.title}
+              </span>
+            </li>
+          );
+        })}
       </ul>{" "}
       <div className="flex justify-between border-t-[1px] p-[10px]">
-        <span className="cursor-pointer">5 items left</span>
-        <span className="cursor-pointer">All</span>
-        <span className="cursor-pointer">Active</span>
-        <span className="cursor-pointer">Completed</span>
-        <span className="cursor-pointer">Clear Completed</span>
+        <button className="cursor-pointer">{toDos.length} items left</button>
+        <button
+          onClick={() => setFilter({ types: "all" })}
+          className="cursor-pointer"
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilter({ types: "completed" })}
+          className="cursor-pointer"
+        >
+          Completed
+        </button>
+        <button
+          onClick={() => setFilter({ types: "uncompleted" })}
+          className="cursor-pointer"
+        >
+          Incompleted
+        </button>
       </div>
     </div>
   );
